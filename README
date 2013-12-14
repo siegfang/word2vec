@@ -1,0 +1,3 @@
+word2vec的Java并行版本，参考了jdeng的C++并行实现：https://github.com/jdeng/word2vec
+
+目前还在编码中...
