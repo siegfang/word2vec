@@ -1,4 +1,4 @@
-package org.nlp.utils;
+package com.nlp.utils;
 
 import java.util.*;
 
@@ -25,9 +25,8 @@ public class HuffmanTree {
 
     public static List<HuffmanNode> getPath(HuffmanNode leafNode){
 
-        HuffmanNode hn = leafNode;
-        List<HuffmanNode> nodes = new LinkedList<HuffmanNode>();
-        while ((hn = hn.getParent()) != null) {
+        List<HuffmanNode> nodes = new ArrayList<HuffmanNode>();
+        for (HuffmanNode hn = leafNode ; hn != null; hn = hn.getParent()){
             nodes.add(hn);
         }
         Collections.reverse(nodes);
