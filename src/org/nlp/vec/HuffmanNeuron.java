@@ -1,6 +1,6 @@
 package org.nlp.vec;
 
-import com.nlp.util.HuffmanNode;
+import org.nlp.util.HuffmanNode;
 
 import java.util.Random;
 

@@ -1,7 +1,7 @@
 package org.nlp.vec;
 
-import com.nlp.util.HuffmanNode;
-import com.nlp.util.HuffmanTree;
+import org.nlp.util.HuffmanNode;
+import org.nlp.util.HuffmanTree;
 
 import java.util.List;
 import java.util.Random;

@@ -1,4 +1,4 @@
-package com.nlp.utils;
+package org.nlp.util;
 
 import java.util.*;
 

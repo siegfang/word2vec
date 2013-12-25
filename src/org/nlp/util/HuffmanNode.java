@@ -1,4 +1,4 @@
-package org.nlp.utils;
+package org.nlp.util;
 
 /**
  * Created by fangy on 13-12-17.

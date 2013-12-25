@@ -1,4 +1,4 @@
-package org.nlp.utils;
+package org.nlp.util;
 
 import java.io.*;
 import java.util.Iterator;
