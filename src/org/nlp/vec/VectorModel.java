@@ -135,7 +135,8 @@ public class VectorModel {
             }
             if (dist > minDist){
                 result.add(new WordScore(entry.getKey(), dist));
-                minDist = result.pollLast().score;
+                result.pollLast();
+                minDist = result.last().score;
             }
         }
         result.pollFirst();
@@ -183,7 +184,8 @@ public class VectorModel {
             }
             if (dist > minDist){
                 result.add(new WordScore(entry.getKey(), dist));
-                minDist = result.pollLast().score;
+                result.pollLast();
+                minDist = result.last().score;
             }
         }
         return result;
