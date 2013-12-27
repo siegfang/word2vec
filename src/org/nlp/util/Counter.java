@@ -1,33 +1,32 @@
 package org.nlp.util;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * User: fangy 13-12-14
  * 计数器
- * @author siegfang
- * @param <T> 待计数的对象类型
+ * 最初代码来自Ansj的tree-split包中的love.cq.util;
+ * @author fangy
+ * @param <T> 键类型
  */
 public class Counter<T> {
+    private HashMap<T, CountInteger> hm = null;
 
-    // 计数使用的哈希表
-    private Map<T, CountInteger> countMap = null;
+    public Counter() {
+        hm = new HashMap<T, CountInteger>();
+    }
 
-    /**
-     * 计数使用的可变整数类型，提升计数效率
-     */
-    private class CountInteger{
+    public Counter(int initialCapacity) {
+        hm = new HashMap<T, CountInteger>(initialCapacity);
+    }
 
-        int count;
+    public class CountInteger{
+        private int count;
 
-        public CountInteger(int num){
-            count = num;
-        }
-
-        public CountInteger(){
-            count = 0;
+        public CountInteger(int initCount){
+            count = initCount;
         }
 
         public void set(int num){
@@ -39,91 +38,103 @@ public class Counter<T> {
         }
 
         @Override
-        public String toString() {
-            return "Count=" + count;
+        public String toString(){
+            return "Count: " + String.valueOf(count);
         }
     }
 
-    public Counter(){
-        countMap = new HashMap<T, CountInteger>();
-    }
-
-    public Counter(int initialCapacity){
-        countMap = new HashMap<T, CountInteger>(initialCapacity);
-    }
-
     /**
-     * 计数
-     * @param t 待计数的对象
+     * 增加一个元素，并增加其计数
+     * @param t 元素
+     * @param n 计数
      */
-    public void count(T t){
+    public void add(T t, int n) {
 
         CountInteger newCount = new CountInteger(1);
-        CountInteger oldCount = countMap.put(t, newCount);
-        // 若无此对象，则返回null
+        CountInteger oldCount = hm.put(t, newCount);
+
         if (oldCount != null){
             newCount.set(oldCount.value() + 1);
         }
+
     }
 
     /**
-     * 删除某一对象
-     * @param t 待删除的对象
-     * @return 对象的数目
+     * 增加一个元素，计数默认增加1
+     * @param t 元素
      */
-    public int remove(T t){
-        return countMap.remove(t).value();
+    public void add(T t) {
+        this.add(t, 1);
     }
 
     /**
-     * 计数器中已计数的对象集合的大小
-     * @return 对象集合
-     */
-    public int size(){
-        return countMap.size();
-    }
-
-    /**
-     * 获取某一对象的数目
-     * @param t 对象
+     * 获得某个元素的计数
+     * @param t 待查询的元素
      * @return 数目
      */
     public int get(T t){
-        CountInteger countNum = countMap.get(t);
-        if (countNum == null){
+        CountInteger count = hm.get(t);
+        if (count == null){
             return 0;
         } else {
-            return countNum.value();
+            return count.value();
         }
     }
 
     /**
-     * 计数器中已计数的对象集合
-     * @return
+     * 获取哈希表中键的个数
+     * @return 键的数量
+     */
+    public int size() {
+        return hm.size();
+    }
+
+    /**
+     * 删除一个元素
+     * @param t 元素
+     */
+    public void remove(T t) {
+        hm.remove(t);
+    }
+
+    /**
+     * 输出已构建好的哈希计数表
+     * @return 哈希表
      */
     public Set<T> keySet(){
-        return countMap.keySet();
+        return hm.keySet();
     }
 
     /**
-     * 小测试
-     * @param args 命令行参数
+     * 将计数器转换为字符串
+     * @return 字符串
      */
-    public static void main(String[] args){
-        String[] words = {"1", "2", "4", "3", "3","1", "2", "4", "4", "3", "3"};
-        Counter<String> wordCounter = new Counter<String>();
-        for (String word : words){
-            wordCounter.count(word);
+    @Override
+    public String toString(){
+        Iterator<Entry<T, CountInteger>> iterator = this.hm.entrySet().iterator() ;
+        StringBuilder sb = new StringBuilder() ;
+        Entry<T, CountInteger> next = null ;
+        while(iterator.hasNext()){
+            next = iterator.next() ;
+            sb.append(next.getKey()) ;
+            sb.append("\t") ;
+            sb.append(next.getValue()) ;
+            sb.append("\n") ;
         }
-
-        for (String keyWord : wordCounter.keySet()){
-            System.out.println(keyWord  + " : " + wordCounter.get(keyWord));
-        }
-        System.out.println("the size of counter : " + wordCounter.size());
-        wordCounter.remove("4");
-        for (String keyWord : wordCounter.keySet()){
-            System.out.println(keyWord  + " : " + wordCounter.get(keyWord));
-        }
+        return sb.toString() ;
     }
 
+    public static void main(String[] args) {
+
+        String[] strKeys = {"1", "2", "3", "1", "2", "1", "3", "3", "3", "1", "2"};
+        Counter<String> counter = new Counter<String>();
+        for (String strKey : strKeys){
+            counter.add(strKey);
+        }
+        for (String strKey : counter.keySet()){
+            System.out.println(strKey + " : " + counter.get(strKey));
+        }
+        System.out.println(counter.get("9"));
+//        System.out.println(Long.MAX_VALUE);
+    }
 }
