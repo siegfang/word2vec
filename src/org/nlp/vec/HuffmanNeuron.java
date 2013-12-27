@@ -2,8 +2,6 @@ package org.nlp.vec;
 
 import org.nlp.util.HuffmanNode;
 
-import java.util.Random;
-
 /**
  * Created by fangy on 13-12-20.
  */
@@ -64,9 +62,6 @@ public class HuffmanNeuron implements HuffmanNode {
         this.frequency = freq;
         this.vector = new double[vectorSize];
         parentNeuron = null;
-        Random random = new Random();
-        for (int i = 0; i < vector.length; i++) {
-            vector[i] = (random.nextDouble() - 0.5) / vectorSize;
-        }
+
     }
 }
