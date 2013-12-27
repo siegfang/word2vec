@@ -157,14 +157,14 @@ public class Word2Vec {
                 if (!tempDir.exists() && !tempDir.isDirectory()){
                     boolean tempCreated = tempDir.mkdir();
                     if (!tempCreated){
-                        logger.severe("临时文件夹创建失败，位于" + tempDir.getAbsolutePath());
+                        logger.severe("unable to create temp file in " + tempDir.getAbsolutePath());
 //                        System.out.println("临时文件夹创建失败，位于" + tempDir.getAbsolutePath());
                     }
                 }
                 tempCorpus = File.createTempFile("tempCorpus", ".txt", tempDir);
 //                tempCorpus = File.createTempFile("tempCorpus", ".txt");
                 if (tempCorpus.exists()){
-                    logger.info("临时文件创建成功，位于" + tempCorpus.getAbsolutePath());
+                    logger.info("create temp file successfully in" + tempCorpus.getAbsolutePath());
 //                    System.out.println("临时文件创建成功，位于" + tempCorpus.getAbsolutePath());
                 }
                 tempCorpusWriter = new BufferedWriter(new FileWriter(tempCorpus));
@@ -188,7 +188,7 @@ public class Word2Vec {
             neuronMap.put(wordText,
                     new WordNeuron(wordText, wordCounter.get(wordText), vectorSize));
         }
-        logger.info("共读取了 " + neuronMap.size() + " 个词。");
+        logger.info("read " + neuronMap.size() + " word totally.");
 //        System.out.println("共读取了 " + neuronMap.size() + " 个词。");
 
     }
@@ -224,6 +224,9 @@ public class Word2Vec {
                 }
             }
             futures.add(threadPool.submit(new Trainer(corpus)));
+            logger.info("the task queue has been allocated completely, " +
+                    "please wait the thread pool (" + numOfThread + ") to process...");
+
             // 等待线程处理完语料
             for (Future future : futures){
                 future.get();
@@ -238,7 +241,7 @@ public class Word2Vec {
         } finally {
             LineIterator.closeQuietly(li);
             if (!tempCorpus.delete()){
-                logger.severe("临时文件未被正确删除，位于"+tempCorpus.getAbsolutePath());
+                logger.severe("unable to delete temp file in "+tempCorpus.getAbsolutePath());
 //                System.err.println("临时文件未被正确删除，位于"+tempCorpus.getAbsolutePath());
             }
             tempCorpus = null;
@@ -317,7 +320,6 @@ public class Word2Vec {
                 for (c = 0; c < vectorSize; c++)
                     neu1[c] += last_word.vector[c];
             }
-
         //Hierarchical Softmax
         List<HuffmanNode> pathNeurons = word.getPathNeurons();
         for (int neuronIndex = 0; neuronIndex < pathNeurons.size() - 1; neuronIndex++){
@@ -382,11 +384,11 @@ public class Word2Vec {
                 if (alpha < initialAlpha * 0.0001) {
                     alpha = initialAlpha * 0.0001;
                 }
-                logger.info("alpha:" + tempAlpha + "\tProgress: "
-                        + (int) (currentWordCount / (double) (totalWordCount + 1) * 100) + "%");
-//                System.out.println("alpha:" + tempAlpha + "\tProgress: "
-//                        + (int) (currentWordCount / (double) (totalWordCount + 1) * 100)
-//                        + "%\t");
+//                logger.info("alpha:" + tempAlpha + "\tProgress: "
+//                        + (int) (currentWordCount / (double) (totalWordCount + 1) * 100) + "%");
+                System.out.println("alpha:" + tempAlpha + "\tProgress: "
+                        + (int) (currentWordCount / (double) (totalWordCount + 1) * 100)
+                        + "%\t");
             }
         }
 
@@ -451,6 +453,7 @@ public class Word2Vec {
                     dataOutputStream.writeFloat(((Double) d).floatValue());
                 }
             }
+            logger.info("saving model successfully in " + file.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
