@@ -6,4 +6,4 @@
  - piskvorky的Python实现 [GibHub](https://github.com/piskvorky/gensim)
  - ansj的Java实现 [GitHub](https://github.com/ansjsun/Word2VEC_java)
 
-正在抓紧施工中...
+基本可用了，例子见[TestWord2Vec](https://github.com/siegfang/word2vec/blob/master/src/test/TestWord2Vec.java)
