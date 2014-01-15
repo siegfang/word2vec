@@ -210,20 +210,33 @@ public class Word2Vec {
 
         LineIterator li = null;
         try {
+
+            BlockingQueue<LinkedList<String>> corpusQueue = new LinkedBlockingQueue<LinkedList<String>>(numOfThread);
+            LinkedList<Future> futures = new LinkedList<Future>(); //每个线程的返回结果，用于等待线程
+
+            for (int thi = 0; thi < numOfThread; thi++){
+                futures.add(threadPool.submit(new Trainer(corpusQueue)));
+            }
+
             tempCorpusWriter.close();
             li = new LineIterator(new FileReader(tempCorpus));
             LinkedList<String> corpus = new LinkedList<String>();   //若干文本组成的语料
-            LinkedList<Future> futures = new LinkedList<Future>();  //每个线程的返回结果，用于等待线程
+
             int trainBlockSize = 1024;  //语料中句子个数
             while (li.hasNext()){
                 corpus.add(li.nextLine());
                 if (corpus.size() == trainBlockSize){
                     //放进任务队列，供线程处理
-                    futures.add(threadPool.submit(new Trainer(corpus)));
+//                    futures.add(threadPool.submit(new Trainer(corpus)));
+
+                    corpusQueue.put(corpus);
+//                    System.out.println("put a corpus");
+
                     corpus = new LinkedList<>();
                 }
             }
-            futures.add(threadPool.submit(new Trainer(corpus)));
+//            futures.add(threadPool.submit(new Trainer(corpus)));
+            corpusQueue.put(corpus);
             logger.info("the task queue has been allocated completely, " +
                     "please wait the thread pool (" + numOfThread + ") to process...");
 
@@ -368,13 +381,19 @@ public class Word2Vec {
 
     public class Trainer implements Runnable{
 
-        LinkedList<String> corpusToBeTrained;
+        private BlockingQueue<LinkedList<String>> corpusQueue;
+
+        private LinkedList<String> corpusToBeTrained;
         int trainingWordCount;
         double tempAlpha;
 
         public Trainer(LinkedList<String> corpus){
             corpusToBeTrained = corpus;
             trainingWordCount = 0;
+        }
+
+        public Trainer(BlockingQueue<LinkedList<String>> corpusQueue){
+            this.corpusQueue = corpusQueue;
         }
 
         private void computeAlpha(){
@@ -392,8 +411,7 @@ public class Word2Vec {
             }
         }
 
-        @Override
-        public void run() {
+        private void training(){
             tempAlpha = alpha;
 //            long nextRandom = 5;
             for( String line : corpusToBeTrained){
@@ -432,6 +450,27 @@ public class Word2Vec {
             }
 
             computeAlpha(); //更新alpha
+        }
+
+        @Override
+        public void run() {
+            boolean hasCorpusToBeTrained = true;
+
+            try {
+                while (hasCorpusToBeTrained){
+//                    System.out.println("get a corpus");
+                    corpusToBeTrained = corpusQueue.poll(2, TimeUnit.SECONDS);
+                    if (null != corpusToBeTrained) {
+                        training();
+                    } else {
+                        // 超过2s还没获得数据，认为主线程已经停止投放语料，即将停止训练。
+                        hasCorpusToBeTrained = false;
+                    }
+                }
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+
         }
     }
 
