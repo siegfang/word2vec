@@ -31,6 +31,8 @@ public class Word2Vec {
     private double alphaThresold;
     private double initialAlpha;  // 初始学习率
     private final byte[] alphaLock = new byte[0];  // alpha同步锁
+    private final byte[] treeLock = new byte[0];  // alpha同步锁
+    private final byte[] vecLock = new byte[0];  // alpha同步锁
 
     private double[] expTable;
     private static final int EXP_TABLE_SIZE = 1000;
@@ -50,12 +52,12 @@ public class Word2Vec {
 
     public static class Factory {
 
-        private int vectorSize = 100;
+        private int vectorSize = 200;
         private int windowSize = 5;
 
         private Method trainMethod = Method.Skip_Gram;
 
-        private double sample = 0.001;
+        private double sample = 1e-3;
 //        private int negativeSample = 0;
 
         private double alpha = 0.025, alphaThreshold = 0.0001;
@@ -210,7 +212,6 @@ public class Word2Vec {
 
         LineIterator li = null;
         try {
-
             BlockingQueue<LinkedList<String>> corpusQueue = new LinkedBlockingQueue<LinkedList<String>>(numOfThread);
             LinkedList<Future> futures = new LinkedList<Future>(); //每个线程的返回结果，用于等待线程
 
@@ -222,7 +223,7 @@ public class Word2Vec {
             li = new LineIterator(new FileReader(tempCorpus));
             LinkedList<String> corpus = new LinkedList<String>();   //若干文本组成的语料
 
-            int trainBlockSize = 1024;  //语料中句子个数
+            int trainBlockSize = 100;  //语料中句子个数
             while (li.hasNext()){
                 corpus.add(li.nextLine());
                 if (corpus.size() == trainBlockSize){
@@ -286,8 +287,7 @@ public class Word2Vec {
                     f += we.vector[j] * out.vector[j];
                 }
                 if (f <= -MAX_EXP || f >= MAX_EXP) {
-//                    if (currentWordCount == 0)
-//                        System.out.println("F: " + f);
+//                    System.out.println("F: " + f);
                     continue;
                 } else {
                     f = (f + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2);
@@ -309,6 +309,13 @@ public class Word2Vec {
                 we.vector[j] += neu1e[j];
             }
         }
+
+//        if (word.getName().equals("手")){
+//            for (Double value : word.vector){
+//                System.out.print(value + "\t");
+//            }
+//            System.out.println();
+//        }
     }
 
     private void cbowGram(int index, List<WordNeuron> sentence, int b, double alpha) {
@@ -412,7 +419,6 @@ public class Word2Vec {
         }
 
         private void training(){
-            tempAlpha = alpha;
 //            long nextRandom = 5;
             for( String line : corpusToBeTrained){
                 List<WordNeuron> sentence = new ArrayList<WordNeuron>();
@@ -449,7 +455,7 @@ public class Word2Vec {
 
             }
 
-            computeAlpha(); //更新alpha
+
         }
 
         @Override
@@ -461,7 +467,10 @@ public class Word2Vec {
 //                    System.out.println("get a corpus");
                     corpusToBeTrained = corpusQueue.poll(2, TimeUnit.SECONDS);
                     if (null != corpusToBeTrained) {
+                        tempAlpha = alpha;
+                        trainingWordCount = 0;
                         training();
+                        computeAlpha(); //更新alpha
                     } else {
                         // 超过2s还没获得数据，认为主线程已经停止投放语料，即将停止训练。
                         hasCorpusToBeTrained = false;
