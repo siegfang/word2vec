@@ -8,5 +8,5 @@
 
 基本可用了，例子见[TestWord2Vec](https://github.com/siegfang/word2vec/blob/master/src/test/TestWord2Vec.java)
 
-![word2vec](http://images.cnblogs.com/cnblogs_com/siegfang/548683/o_word2vec_diagram.png)
+![word2vec](http://images.cnblogs.com/cnblogs_com/siegfang/543577/o_word2vec_diagram.png)
 
