@@ -1,5 +1,7 @@
 # word2vec的Java并行实现
 
+## the Parallel Implementation of word2vec in Java
+
 参考了其它语言的并行实现方法，包括：
  - Tomas Mikolov的C实现 [Google Code](https://code.google.com/p/word2vec/)
  - jdeng的C++实现 [GitHub](https://github.com/jdeng/word2vec)
