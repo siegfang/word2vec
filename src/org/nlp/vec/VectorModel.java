@@ -110,6 +110,37 @@ public class VectorModel {
     }
 
     /**
+     * 保存词向量模型
+     * @param file 模型存放路径
+     */
+    public void saveModel(File file) {
+
+        DataOutputStream dataOutputStream = null;
+        try {
+            dataOutputStream = new DataOutputStream(new BufferedOutputStream(
+                    new FileOutputStream(file)));
+            dataOutputStream.writeInt(wordMap.size());
+            dataOutputStream.writeInt(vectorSize);
+            for (Map.Entry<String, float[]> element : wordMap.entrySet()) {
+                dataOutputStream.writeUTF(element.getKey());
+                for (double d : element.getValue()) {
+                    dataOutputStream.writeFloat(((Double) d).floatValue());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (dataOutputStream != null){
+                    dataOutputStream.close();
+                }
+            }catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+    }
+
+    /**
      * 获取与词word最相近topNSize个词
      * @param queryWord 词
      * @return 相近词集，若模型不包含词word，则返回空集
@@ -140,6 +171,38 @@ public class VectorModel {
             }
         }
         result.pollFirst();
+
+        return result;
+    }
+
+    /**
+     * 获取与词向量center最相近topNSize个词
+     * @param center 词向量
+     * @return 相近词集
+     */
+    public Set<WordScore> similar(float[] center){
+        if (center == null || center.length != vectorSize){
+            return Collections.emptySet();
+        }
+
+        int resultSize = wordMap.size() < topNSize ? wordMap.size() : topNSize;
+        TreeSet<WordScore> result = new TreeSet<WordScore>();
+        for (int i = 0; i < resultSize + 1; i++){
+            result.add(new WordScore("^_^", -Float.MAX_VALUE));
+        }
+        float minDist = -Float.MAX_VALUE;
+        for (Map.Entry<String, float[]> entry : wordMap.entrySet()){
+            float[] vector = entry.getValue();
+            float dist = 0;
+            for (int i = 0; i < vector.length; i++){
+                dist += center[i] * vector[i];
+            }
+            if (dist > minDist){
+                result.add(new WordScore(entry.getKey(), dist));
+                minDist = result.pollLast().score;
+            }
+        }
+//        result.pollFirst();
 
         return result;
     }
