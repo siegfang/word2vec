@@ -1,6 +1,6 @@
-package com.nlp.vec;
+package org.nlp.vec;
 
-import com.nlp.util.*;
+import org.nlp.util.*;
 
 import java.io.*;
 import java.util.*;
