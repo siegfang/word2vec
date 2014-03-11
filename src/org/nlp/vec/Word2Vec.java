@@ -1,11 +1,10 @@
-package org.nlp.vec;
+package com.nlp.vec;
 
-import org.nlp.util.*;
+import com.nlp.util.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -30,6 +29,7 @@ public class Word2Vec {
     private double alpha;       // 学习率，并行时由线程更新
     private double alphaThresold;
     private double initialAlpha;  // 初始学习率
+    private int freqThresold = 5;
     private final byte[] alphaLock = new byte[0];  // alpha同步锁
     private final byte[] treeLock = new byte[0];  // alpha同步锁
     private final byte[] vecLock = new byte[0];  // alpha同步锁
@@ -54,6 +54,7 @@ public class Word2Vec {
 
         private int vectorSize = 200;
         private int windowSize = 5;
+        private int freqThresold = 5;
 
         private Method trainMethod = Method.Skip_Gram;
 
@@ -71,6 +72,11 @@ public class Word2Vec {
 
         public Factory setWindow(int size){
             windowSize = size;
+            return this;
+        }
+
+        public Factory setFreqThresold(int thresold){
+            freqThresold = thresold;
             return this;
         }
 
@@ -113,6 +119,7 @@ public class Word2Vec {
     private Word2Vec(Factory factory){
         vectorSize = factory.vectorSize;
         windowSize = factory.windowSize;
+        freqThresold = factory.freqThresold;
         trainMethod = factory.trainMethod;
         sample = factory.sample;
 //        negativeSample = factory.negativeSample;
@@ -187,6 +194,10 @@ public class Word2Vec {
 
         neuronMap = new HashMap<String, WordNeuron>();
         for (String wordText : wordCounter.keySet()){
+            int freq = wordCounter.get(wordText);
+            if (freq < freqThresold){
+                continue;
+            }
             neuronMap.put(wordText,
                     new WordNeuron(wordText, wordCounter.get(wordText), vectorSize));
         }
@@ -212,10 +223,11 @@ public class Word2Vec {
 
         LineIterator li = null;
         try {
-            BlockingQueue<LinkedList<String>> corpusQueue = new LinkedBlockingQueue<LinkedList<String>>(numOfThread);
+            BlockingQueue<LinkedList<String>> corpusQueue = new ArrayBlockingQueue<LinkedList<String>>(numOfThread);
             LinkedList<Future> futures = new LinkedList<Future>(); //每个线程的返回结果，用于等待线程
 
             for (int thi = 0; thi < numOfThread; thi++){
+//                threadPool.execute(new Trainer(corpusQueue));
                 futures.add(threadPool.submit(new Trainer(corpusQueue)));
             }
 
@@ -223,7 +235,7 @@ public class Word2Vec {
             li = new LineIterator(new FileReader(tempCorpus));
             LinkedList<String> corpus = new LinkedList<String>();   //若干文本组成的语料
 
-            int trainBlockSize = 100;  //语料中句子个数
+            int trainBlockSize = 500;  //语料中句子个数
             while (li.hasNext()){
                 corpus.add(li.nextLine());
                 if (corpus.size() == trainBlockSize){
@@ -466,6 +478,7 @@ public class Word2Vec {
                 while (hasCorpusToBeTrained){
 //                    System.out.println("get a corpus");
                     corpusToBeTrained = corpusQueue.poll(2, TimeUnit.SECONDS);
+//                    System.out.println("队列长度:" + corpusQueue.size());
                     if (null != corpusToBeTrained) {
                         tempAlpha = alpha;
                         trainingWordCount = 0;
