@@ -18,7 +18,7 @@ public class Word2Vec {
     private int windowSize; //文字窗口大小
     private int vectorSize; //词向量的元素个数
 
-    public enum Method{
+    public static enum Method{
         CBow, Skip_Gram
     }
 
