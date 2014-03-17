@@ -50,7 +50,7 @@ public class Counter<T> {
      */
     public void add(T t, int n) {
 
-        CountInteger newCount = new CountInteger(1);
+        CountInteger newCount = new CountInteger(n);
         CountInteger oldCount = hm.put(t, newCount);
 
         if (oldCount != null){
