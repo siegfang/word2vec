@@ -1,13 +1,9 @@
 package org.nlp.vec;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
  * User: fangy
  * Date: 13-12-9
  * Time: 下午2:30
@@ -18,6 +14,14 @@ public class VectorModel {
     private int vectorSize = 200; //特征数
 
     private int topNSize = 40;
+
+    public Map<String, float[]> getWordMap() {
+        return wordMap;
+    }
+
+    public void setWordMap(Map<String, float[]> wordMap){
+        this.wordMap = wordMap;
+    }
 
     /**
      * 获取最相似词的数量
@@ -33,6 +37,14 @@ public class VectorModel {
      */
     public void setTopNSize(int topNSize) {
         this.topNSize = topNSize;
+    }
+
+    public int getVectorSize() {
+        return vectorSize;
+    }
+
+    public void setVectorSize(int vectorSize) {
+        this.vectorSize = vectorSize;
     }
 
     /**
@@ -52,6 +64,7 @@ public class VectorModel {
         this.wordMap = wordMap;
         this.vectorSize = vectorSize;
     }
+
 
     /**
      * 使用Word2Vec保存的模型加载词向量模型
@@ -123,8 +136,8 @@ public class VectorModel {
             dataOutputStream.writeInt(vectorSize);
             for (Map.Entry<String, float[]> element : wordMap.entrySet()) {
                 dataOutputStream.writeUTF(element.getKey());
-                for (double d : element.getValue()) {
-                    dataOutputStream.writeFloat(((Double) d).floatValue());
+                for (float d : element.getValue()) {
+                    dataOutputStream.writeFloat(d);
                 }
             }
         } catch (IOException e) {
@@ -152,9 +165,9 @@ public class VectorModel {
             return Collections.emptySet();
         }
 
-        int resultSize = wordMap.size() < topNSize ? wordMap.size() : topNSize;
+        int resultSize = wordMap.size() < topNSize ? wordMap.size() : topNSize + 1;
         TreeSet<WordScore> result = new TreeSet<WordScore>();
-        for (int i = 0; i < resultSize + 1; i++){
+        for (int i = 0; i < resultSize; i++){
             result.add(new WordScore("^_^", -Float.MAX_VALUE));
         }
         float minDist = -Float.MAX_VALUE;
@@ -166,8 +179,7 @@ public class VectorModel {
             }
             if (dist > minDist){
                 result.add(new WordScore(entry.getKey(), dist));
-                result.pollLast();
-                minDist = result.last().score;
+                minDist = result.pollLast().score;
             }
         }
         result.pollFirst();
@@ -175,11 +187,6 @@ public class VectorModel {
         return result;
     }
 
-    /**
-     * 获取与词向量center最相近topNSize个词
-     * @param center 词向量
-     * @return 相近词集
-     */
     public Set<WordScore> similar(float[] center){
         if (center == null || center.length != vectorSize){
             return Collections.emptySet();
@@ -187,7 +194,7 @@ public class VectorModel {
 
         int resultSize = wordMap.size() < topNSize ? wordMap.size() : topNSize;
         TreeSet<WordScore> result = new TreeSet<WordScore>();
-        for (int i = 0; i < resultSize + 1; i++){
+        for (int i = 0; i < resultSize; i++){
             result.add(new WordScore("^_^", -Float.MAX_VALUE));
         }
         float minDist = -Float.MAX_VALUE;
@@ -247,12 +254,16 @@ public class VectorModel {
             }
             if (dist > minDist){
                 result.add(new WordScore(entry.getKey(), dist));
-                result.pollLast();
-                minDist = result.last().score;
+                minDist = result.pollLast().score;
             }
         }
         return result;
     }
+
+    public float[] getWordVector(String word) {
+        return wordMap.get(word);
+    }
+
 
     public class WordScore implements Comparable<WordScore> {
 
