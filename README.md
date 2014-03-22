@@ -8,7 +8,7 @@
  - piskvorky的Python实现 [GibHub](https://github.com/piskvorky/gensim)
  - ansj的Java实现 [GitHub](https://github.com/ansjsun/Word2VEC_java)
 
-基本可用了，例子见[TestWord2Vec](https://github.com/siegfang/word2vec/blob/master/src/test/TestWord2Vec.java)
+使用Java 7编写，基本可用了，例子见[TestWord2Vec](https://github.com/siegfang/word2vec/blob/master/src/test/TestWord2Vec.java)
 
 ![word2vec](http://images.cnblogs.com/cnblogs_com/siegfang/543577/o_word2vec_diagram.png)
 
