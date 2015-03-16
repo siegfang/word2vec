@@ -54,7 +54,7 @@ public class Counter<T> {
         CountInteger oldCount = hm.put(t, newCount);
 
         if (oldCount != null){
-            newCount.set(oldCount.value() + 1);
+            newCount.set(oldCount.value() + n);
         }
 
     }
