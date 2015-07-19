@@ -123,6 +123,63 @@ public class VectorModel {
     }
 
     /**
+     * Load file from classpath
+     * @param path
+     * @return
+     */
+    public static VectorModel loadFromClasspath(String path) {
+    
+        if (path == null || path.isEmpty()){
+            throw new IllegalArgumentException("模型路径可以为null或空。");
+        }
+
+        DataInputStream dis = null;
+        int wordCount, layerSizeLoaded = 0;
+        Map<String, float[]> wordMapLoaded = new HashMap<String, float[]>();
+        InputStream is = VectorModel.class.getResourceAsStream(path);
+        try {
+            dis = new DataInputStream(is);
+            wordCount = dis.readInt();
+            layerSizeLoaded = dis.readInt();
+            float vector;
+
+            String key;
+            float[] value;
+            for (int i = 0; i < wordCount; i++) {
+                key = dis.readUTF();
+                value = new float[layerSizeLoaded];
+                double len = 0;
+                for (int j = 0; j < layerSizeLoaded; j++) {
+                    vector = dis.readFloat();
+                    len += vector * vector;
+                    value[j] = vector;
+                }
+
+                len = Math.sqrt(len);
+
+                for (int j = 0; j < layerSizeLoaded; j++) {
+                    value[j] /= len;
+                }
+                wordMapLoaded.put(key, value);
+            }
+
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+        }finally {
+            try {
+                if (dis != null){
+                    dis.close();
+                }
+            } catch (IOException ioe){
+                ioe.printStackTrace();
+            }
+        }
+
+        return new VectorModel(wordMapLoaded, layerSizeLoaded);
+
+    }
+
+    /**
      * 保存词向量模型
      * @param file 模型存放路径
      */
